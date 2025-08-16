@@ -3,24 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Varrição Mecanizada</title>
+    <title>Registro de Varrição Mecanizada (Offline)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
-        }
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 4px solid #3b82f6;
-            width: 40px;
-            height: 40px;
-            animation: spin 2s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
         /* Esconde as setas do input number */
         input[type=number]::-webkit-inner-spin-button, 
@@ -31,6 +19,18 @@
         input[type=number] {
           -moz-appearance: textfield;
         }
+        .delete-btn-local {
+            background: none;
+            border: none;
+            color: #ef4444; /* red-500 */
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 4px;
+            line-height: 1;
+        }
+        .delete-btn-local:hover {
+            color: #b91c1c; /* red-700 */
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
@@ -38,20 +38,14 @@
     <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
         <header class="text-center mb-8">
             <h1 class="text-3xl font-bold text-gray-900">Varrição Mecanizada - Roteiros Noturnos</h1>
-            <p class="text-gray-600 mt-2">Selecione o roteiro do dia e anote a quilometragem de cada local concluído.</p>
+            <p class="text-gray-600 mt-2">Selecione o roteiro, adicione ou remova locais e anote a quilometragem. Suas customizações são salvas neste navegador.</p>
         </header>
 
-        <div id="auth-status" class="text-center p-4 mb-6 bg-white rounded-lg shadow-md">
-            <p id="auth-message">Conectando ao banco de dados...</p>
-            <div id="loader" class="loader mx-auto my-2 hidden"></div>
-            <p class="text-xs text-gray-500 mt-2">ID de Usuário: <span id="user-id" class="font-mono">N/A</span></p>
-        </div>
-
-        <div id="app-content" class="hidden">
+        <div id="app-content">
             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
                 <h2 class="text-2xl font-semibold mb-4">Lançar Novo Roteiro</h2>
                 <form id="log-form" class="space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label for="data" class="block text-sm font-medium text-gray-700">Data</label>
                             <input type="date" id="data" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
@@ -60,10 +54,18 @@
                             <label for="motorista" class="block text-sm font-medium text-gray-700">Nome do Motorista</label>
                             <input type="text" id="motorista" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Insira o nome completo">
                         </div>
+                        <div>
+                            <label for="maquina-select" class="block text-sm font-medium text-gray-700">Tipo de Máquina</label>
+                            <select id="maquina-select" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="">-- Selecione --</option>
+                                <option value="Máquina 1">Máquina 1</option>
+                                <option value="Máquina 2">Máquina 2</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div>
-                        <label for="roteiro-select" class="block text-sm font-medium text-gray-700">Selecione o Roteiro</e-select>
+                        <label for="roteiro-select" class="block text-sm font-medium text-gray-700">Selecione o Roteiro</label>
                         <select id="roteiro-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
                             <option value="">-- Escolha o dia da semana --</option>
                         </select>
@@ -73,6 +75,15 @@
                         <div id="roteiro-locais" class="space-y-3 p-4 border rounded-md bg-gray-50">
                             <!-- Locais do roteiro serão inseridos aqui -->
                         </div>
+                        
+                        <div class="mt-4 p-4 border rounded-md bg-gray-50">
+                             <label for="novo-local-input" class="block text-sm font-medium text-gray-700 mb-2">Adicionar novo local ao roteiro</label>
+                             <div class="flex items-center space-x-2">
+                                <input type="text" id="novo-local-input" placeholder="Digite o nome do local" class="flex-grow px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <button type="button" id="add-local-btn" class="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">Adicionar</button>
+                             </div>
+                        </div>
+
                          <div class="mt-4 text-right">
                             <span class="text-xl font-bold text-gray-800">TOTAL: <span id="total-km" class="text-blue-600">0,00</span> km</span>
                         </div>
@@ -94,6 +105,7 @@
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorista</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Máquina</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roteiro</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Locais Concluídos</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Total</th>
@@ -109,247 +121,253 @@
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        setLogLevel('debug');
-
-        const roteiros = {
-            "segunda": { nome: "SEGUNDA-FEIRA", locais: ["Ciclovia Orla de Camburi", "Ciclovia Av Adalberto Simão Nader"] },
-            "terca": { nome: "TERÇA-FEIRA", locais: ["Santa Helena", "Enseada do Suá"] },
-            "quarta": { nome: "QUARTA-FEIRA", locais: ["Praia do Suá", "Tribunal de Justiça"] },
-            "quinta": { nome: "QUINTA-FEIRA", locais: ["Santa Lúcia", "Av Rio Branco", "Ponte Ayrton Sena"] },
-            "sexta": { nome: "SEXTA-FEIRA", locais: ["Ciclovia Curva da Jurema", "Ciclovia Orla de Camburi", "Jardim da Penha"] },
-            "sabado": { nome: "SÁBADO", locais: ["Praia do Canto (baixada)", "Praia do Suá"] }
-        };
-
-        const logForm = document.getElementById('log-form');
-        const logsTableBody = document.getElementById('logs-table-body');
-        const dataInput = document.getElementById('data');
-        const roteiroSelect = document.getElementById('roteiro-select');
-        const roteiroContainer = document.getElementById('roteiro-container');
-        const roteiroLocais = document.getElementById('roteiro-locais');
-        const totalKmSpan = document.getElementById('total-km');
-        const authMessage = document.getElementById('auth-message');
-        const userIdSpan = document.getElementById('user-id');
-        const loader = document.getElementById('loader');
-        const appContent = document.getElementById('app-content');
-
-        let userId = null;
-        let logsCollectionRef = null;
-        let unsubscribe = null;
-
-        function setTodayDate() {
-            dataInput.value = new Date().toISOString().split('T')[0];
-        }
-
-        function popularRoteiros() {
-            Object.keys(roteiros).forEach(key => {
-                const option = document.createElement('option');
-                option.value = key;
-                option.textContent = roteiros[key].nome;
-                roteiroSelect.appendChild(option);
-            });
-        }
-
-        function calcularTotalKm() {
-            let total = 0;
-            const kmInputs = roteiroLocais.querySelectorAll('input[type="number"]');
-            kmInputs.forEach(input => {
-                if (!input.disabled && input.value) {
-                    total += parseFloat(input.value);
-                }
-            });
-            totalKmSpan.textContent = total.toFixed(2).replace('.', ',');
-        }
-
-        function exibirLocaisRoteiro() {
-            const roteiroKey = roteiroSelect.value;
-            roteiroLocais.innerHTML = '';
-            totalKmSpan.textContent = '0,00';
-
-            if (!roteiroKey) {
-                roteiroContainer.classList.add('hidden');
-                return;
-            }
-
-            const roteiro = roteiros[roteiroKey];
-            roteiro.locais.forEach((local, index) => {
-                const div = document.createElement('div');
-                div.className = 'grid grid-cols-12 gap-2 items-center';
-                div.innerHTML = `
-                    <div class="col-span-1 flex items-center justify-center">
-                        <input id="local-check-${index}" type="checkbox" data-index="${index}" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                    </div>
-                    <label for="local-check-${index}" class="col-span-7 sm:col-span-8 block text-sm text-gray-800">${local}</label>
-                    <div class="col-span-4 sm:col-span-3">
-                        <input type="number" id="local-km-${index}" min="0" step="0.1" disabled placeholder="km" class="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-right">
-                    </div>
-                `;
-                roteiroLocais.appendChild(div);
-            });
-
-            roteiroContainer.classList.remove('hidden');
-        }
-        
-        roteiroLocais.addEventListener('change', (event) => {
-            if (event.target.type === 'checkbox') {
-                const index = event.target.dataset.index;
-                const kmInput = document.getElementById(`local-km-${index}`);
-                kmInput.disabled = !event.target.checked;
-                if (!event.target.checked) {
-                    kmInput.value = '';
-                }
-                kmInput.focus();
-            }
-            calcularTotalKm();
-        });
-
-        roteiroLocais.addEventListener('input', (event) => {
-            if (event.target.type === 'number') {
-                calcularTotalKm();
-            }
-        });
-
-        function renderLogs(logs) {
-            logsTableBody.innerHTML = '';
-            if (logs.length === 0) {
-                logsTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Nenhum lançamento encontrado.</td></tr>';
-                return;
-            }
-
-            logs.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-            logs.forEach(log => {
-                const tr = document.createElement('tr');
-                const locaisHtml = log.locaisConcluidos.map(l => `${l.nome}: <strong>${String(l.km.toFixed(2)).replace('.',',')} km</strong>`).join('<br>');
-                
-                tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${new Date(log.data + 'T03:00:00').toLocaleDateString('pt-BR')}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.motorista}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.roteiroNome}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">${locaisHtml}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${String(log.kmTotal.toFixed(2)).replace('.', ',')}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button data-id="${log.id}" class="text-red-600 hover:text-red-900 delete-btn">Excluir</button>
-                    </td>
-                `;
-                logsTableBody.appendChild(tr);
-            });
-        }
-
-        function getLogs() {
-            if (unsubscribe) unsubscribe();
-            const q = query(logsCollectionRef);
-            unsubscribe = onSnapshot(q, (snapshot) => {
-                const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderLogs(logs);
-            }, console.error);
-        }
-
-        async function saveLog(event) {
-            event.preventDefault();
-            const roteiroKey = roteiroSelect.value;
-            if (!roteiroKey) {
-                alert("Por favor, selecione um roteiro.");
-                return;
-            }
-
-            const locaisConcluidos = [];
-            const checkboxes = roteiroLocais.querySelectorAll('input[type="checkbox"]:checked');
-            checkboxes.forEach(cb => {
-                const index = cb.dataset.index;
-                const kmInput = document.getElementById(`local-km-${index}`);
-                const kmValue = parseFloat(kmInput.value);
-                if (kmValue > 0) {
-                    locaisConcluidos.push({
-                        nome: roteiros[roteiroKey].locais[index],
-                        km: kmValue
-                    });
-                }
-            });
-
-            if (locaisConcluidos.length === 0) {
-                alert("Nenhum local com quilometragem foi preenchido. Adicione os KMs antes de salvar.");
-                return;
-            }
-
-            const logData = {
-                data: dataInput.value,
-                motorista: document.getElementById('motorista').value,
-                roteiroNome: roteiros[roteiroKey].nome,
-                locaisConcluidos: locaisConcluidos,
-                kmTotal: parseFloat(totalKmSpan.textContent.replace(',', '.')),
-                createdAt: new Date()
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const DEFAULT_ROTEIROS = {
+                "segunda": { nome: "SEGUNDA-FEIRA", locais: ["Ciclovia Orla de Camburi", "Ciclovia Av Adalberto Simão Nader"] },
+                "terca": { nome: "TERÇA-FEIRA", locais: ["Santa Helena", "Enseada do Suá"] },
+                "quarta": { nome: "QUARTA-FEIRA", locais: ["Praia do Suá", "Tribunal de Justiça"] },
+                "quinta": { nome: "QUINTA-FEIRA", locais: ["Santa Lúcia", "Av Rio Branco", "Ponte Ayrton Sena"] },
+                "sexta": { nome: "SEXTA-FEIRA", locais: ["Ciclovia Curva da Jurema", "Ciclovia Orla de Camburi", "Jardim da Penha"] },
+                "sabado": { nome: "SÁBADO", locais: ["Praia do Canto (baixada)", "Praia do Suá"] }
             };
 
-            try {
-                await addDoc(logsCollectionRef, logData);
+            const ROTEIROS_STORAGE_KEY = 'roteiros_personalizados_v1';
+            const LOGS_STORAGE_KEY = 'roteiros_varricao_offline_v1';
+
+            let roteiros = JSON.parse(localStorage.getItem(ROTEIROS_STORAGE_KEY)) || JSON.parse(JSON.stringify(DEFAULT_ROTEIROS));
+
+            const logForm = document.getElementById('log-form');
+            const logsTableBody = document.getElementById('logs-table-body');
+            const dataInput = document.getElementById('data');
+            const motoristaInput = document.getElementById('motorista');
+            const maquinaSelect = document.getElementById('maquina-select');
+            const roteiroSelect = document.getElementById('roteiro-select');
+            const roteiroContainer = document.getElementById('roteiro-container');
+            const roteiroLocais = document.getElementById('roteiro-locais');
+            const totalKmSpan = document.getElementById('total-km');
+            const novoLocalInput = document.getElementById('novo-local-input');
+            const addLocalBtn = document.getElementById('add-local-btn');
+            
+            function saveRoteiros() {
+                localStorage.setItem(ROTEIROS_STORAGE_KEY, JSON.stringify(roteiros));
+            }
+
+            function setTodayDate() {
+                dataInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            function popularRoteiros() {
+                Object.keys(roteiros).forEach(key => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = roteiros[key].nome;
+                    roteiroSelect.appendChild(option);
+                });
+            }
+
+            function calcularTotalKm() {
+                let total = 0;
+                const kmInputs = roteiroLocais.querySelectorAll('input[type="number"]');
+                kmInputs.forEach(input => {
+                    if (!input.disabled && input.value) {
+                        total += parseFloat(input.value);
+                    }
+                });
+                totalKmSpan.textContent = total.toFixed(2).replace('.', ',');
+            }
+
+            function exibirLocaisRoteiro() {
+                const roteiroKey = roteiroSelect.value;
+                roteiroLocais.innerHTML = '';
+                totalKmSpan.textContent = '0,00';
+
+                if (!roteiroKey) {
+                    roteiroContainer.classList.add('hidden');
+                    return;
+                }
+
+                const roteiro = roteiros[roteiroKey];
+                roteiro.locais.forEach((local, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'grid grid-cols-12 gap-2 items-center';
+                    div.innerHTML = `
+                        <div class="col-span-1 flex items-center justify-center">
+                            <input id="local-check-${index}" type="checkbox" data-index="${index}" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                        </div>
+                        <label for="local-check-${index}" class="col-span-6 sm:col-span-7 block text-sm text-gray-800">${local}</label>
+                        <div class="col-span-4 sm:col-span-3">
+                            <input type="number" id="local-km-${index}" min="0" step="0.1" disabled placeholder="km" class="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-right">
+                        </div>
+                        <div class="col-span-1 flex items-center justify-center">
+                            <button type="button" class="delete-btn-local" data-index="${index}" title="Remover local">×</button>
+                        </div>
+                    `;
+                    roteiroLocais.appendChild(div);
+                });
+
+                roteiroContainer.classList.remove('hidden');
+            }
+
+            function addLocal() {
+                const roteiroKey = roteiroSelect.value;
+                const novoLocal = novoLocalInput.value.trim();
+
+                if (!roteiroKey) {
+                    alert("Selecione um roteiro antes de adicionar um local.");
+                    return;
+                }
+                if (novoLocal === "") {
+                    alert("O nome do local não pode estar vazio.");
+                    return;
+                }
+
+                roteiros[roteiroKey].locais.push(novoLocal);
+                saveRoteiros();
+                exibirLocaisRoteiro();
+                novoLocalInput.value = "";
+            }
+
+            roteiroLocais.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-btn-local')) {
+                    const index = parseInt(event.target.dataset.index, 10);
+                    const roteiroKey = roteiroSelect.value;
+                    if (confirm(`Tem certeza que deseja remover "${roteiros[roteiroKey].locais[index]}" do roteiro?`)) {
+                        roteiros[roteiroKey].locais.splice(index, 1);
+                        saveRoteiros();
+                        exibirLocaisRoteiro();
+                    }
+                }
+            });
+
+            roteiroLocais.addEventListener('change', (event) => {
+                if (event.target.type === 'checkbox') {
+                    const index = event.target.dataset.index;
+                    const kmInput = document.getElementById(`local-km-${index}`);
+                    kmInput.disabled = !event.target.checked;
+                    if (!event.target.checked) {
+                        kmInput.value = '';
+                    }
+                    if(event.target.checked) {
+                        kmInput.focus();
+                    }
+                }
+                calcularTotalKm();
+            });
+
+            roteiroLocais.addEventListener('input', (event) => {
+                if (event.target.type === 'number') {
+                    calcularTotalKm();
+                }
+            });
+
+            function renderLogs() {
+                const logs = JSON.parse(localStorage.getItem(LOGS_STORAGE_KEY)) || [];
+                logsTableBody.innerHTML = '';
+                if (logs.length === 0) {
+                    logsTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Nenhum lançamento encontrado.</td></tr>';
+                    return;
+                }
+
+                logs.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+                logs.forEach(log => {
+                    const tr = document.createElement('tr');
+                    const locaisHtml = log.locaisConcluidos.map(l => `${l.nome}: <strong>${String(l.km.toFixed(2)).replace('.',',')} km</strong>`).join('<br>');
+                    
+                    tr.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${new Date(log.data + 'T03:00:00').toLocaleDateString('pt-BR')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.motorista}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.maquina}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.roteiroNome}</td>
+                        <td class="px-6 py-4 text-sm text-gray-500">${locaisHtml}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${String(log.kmTotal.toFixed(2)).replace('.', ',')}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button data-id="${log.id}" class="text-red-600 hover:text-red-900 delete-btn">Excluir</button>
+                        </td>
+                    `;
+                    logsTableBody.appendChild(tr);
+                });
+            }
+
+            function saveLog(event) {
+                event.preventDefault();
+                const roteiroKey = roteiroSelect.value;
+                if (!roteiroKey) {
+                    alert("Por favor, selecione um roteiro.");
+                    return;
+                }
+                if (!maquinaSelect.value) {
+                    alert("Por favor, selecione o tipo de máquina.");
+                    return;
+                }
+
+                const locaisConcluidos = [];
+                const checkboxes = roteiroLocais.querySelectorAll('input[type="checkbox"]:checked');
+                checkboxes.forEach(cb => {
+                    const index = cb.dataset.index;
+                    const kmInput = document.getElementById(`local-km-${index}`);
+                    const kmValue = parseFloat(kmInput.value);
+                    if (kmValue > 0) {
+                        locaisConcluidos.push({
+                            nome: roteiros[roteiroKey].locais[index],
+                            km: kmValue
+                        });
+                    }
+                });
+
+                if (locaisConcluidos.length === 0) {
+                    alert("Nenhum local com quilometragem foi preenchido. Adicione os KMs antes de salvar.");
+                    return;
+                }
+
+                const logData = {
+                    id: Date.now(),
+                    data: dataInput.value,
+                    motorista: motoristaInput.value,
+                    maquina: maquinaSelect.value,
+                    roteiroNome: roteiros[roteiroKey].nome,
+                    locaisConcluidos: locaisConcluidos,
+                    kmTotal: parseFloat(totalKmSpan.textContent.replace(',', '.')),
+                };
+                
+                const logs = JSON.parse(localStorage.getItem(LOGS_STORAGE_KEY)) || [];
+                logs.push(logData);
+                localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(logs));
+
                 logForm.reset();
                 setTodayDate();
                 exibirLocaisRoteiro();
-            } catch (error) {
-                console.error("Erro ao salvar o roteiro: ", error);
-                alert("Ocorreu um erro ao salvar.");
+                renderLogs();
             }
-        }
 
-        async function deleteLog(id) {
-            if (!confirm("Tem certeza que deseja excluir este lançamento?")) return;
-            try {
-                const docRef = doc(db, `/artifacts/${appId}/users/${userId}/roteiros_varricao`, id);
-                await deleteDoc(docRef);
-            } catch (error) {
-                console.error("Erro ao excluir o roteiro: ", error);
-                alert("Ocorreu um erro ao excluir.");
+            function deleteLog(id) {
+                if (!confirm("Tem certeza que deseja excluir este lançamento?")) return;
+                let logs = JSON.parse(localStorage.getItem(LOGS_STORAGE_KEY)) || [];
+                logs = logs.filter(log => log.id !== parseInt(id));
+                localStorage.setItem(LOGS_STORAGE_KEY, JSON.stringify(logs));
+                renderLogs();
             }
-        }
-        
-        logForm.addEventListener('submit', saveLog);
-        roteiroSelect.addEventListener('change', exibirLocaisRoteiro);
-        logsTableBody.addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-btn')) {
-                deleteLog(event.target.dataset.id);
-            }
-        });
+            
+            logForm.addEventListener('submit', saveLog);
+            roteiroSelect.addEventListener('change', exibirLocaisRoteiro);
+            addLocalBtn.addEventListener('click', addLocal);
+            novoLocalInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    addLocal();
+                }
+            });
+            logsTableBody.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-btn')) {
+                    deleteLog(event.target.dataset.id);
+                }
+            });
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userId = user.uid;
-                userIdSpan.textContent = userId;
-                authMessage.textContent = 'Conectado com sucesso!';
-                loader.classList.add('hidden');
-                logsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/roteiros_varricao`);
-                appContent.classList.remove('hidden');
-                getLogs();
-            } else {
-                authMessage.textContent = 'Usuário não autenticado.';
-            }
-        });
-
-        async function initializeAuth() {
-            try {
-                loader.classList.remove('hidden');
-                await signInAnonymously(auth);
-            } catch (error) {
-                console.error("Erro na autenticação: ", error);
-                authMessage.textContent = 'Falha na autenticação.';
-                loader.classList.add('hidden');
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
+            // Inicialização do App
             setTodayDate();
             popularRoteiros();
-            initializeAuth();
+            renderLogs();
         });
     </script>
 </body>
