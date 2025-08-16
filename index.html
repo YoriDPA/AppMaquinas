@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Diário de Máquina com Roteiros</title>
+    <title>Registro de Varrição Mecanizada</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -13,7 +13,7 @@
         .loader {
             border: 4px solid #f3f3f3;
             border-radius: 50%;
-            border-top: 4px solid #3498db;
+            border-top: 4px solid #3b82f6;
             width: 40px;
             height: 40px;
             animation: spin 2s linear infinite;
@@ -22,14 +22,23 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        /* Esconde as setas do input number */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
         <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Registro Diário por Roteiro</h1>
-            <p class="text-gray-600 mt-2">Selecione o roteiro e marque as ruas concluídas.</p>
+            <h1 class="text-3xl font-bold text-gray-900">Varrição Mecanizada - Roteiros Noturnos</h1>
+            <p class="text-gray-600 mt-2">Selecione o roteiro do dia e anote a quilometragem de cada local concluído.</p>
         </header>
 
         <div id="auth-status" class="text-center p-4 mb-6 bg-white rounded-lg shadow-md">
@@ -40,51 +49,45 @@
 
         <div id="app-content" class="hidden">
             <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 class="text-2xl font-semibold mb-4">Novo Registro</h2>
+                <h2 class="text-2xl font-semibold mb-4">Lançar Novo Roteiro</h2>
                 <form id="log-form" class="space-y-6">
-                    <!-- Informações Gerais -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label for="data" class="block text-sm font-medium text-gray-700">Data</label>
-                            <input type="date" id="data" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                            <input type="date" id="data" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                         </div>
                         <div>
                             <label for="motorista" class="block text-sm font-medium text-gray-700">Nome do Motorista</label>
-                            <input type="text" id="motorista" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: João da Silva">
+                            <input type="text" id="motorista" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Insira o nome completo">
                         </div>
                     </div>
 
-                    <!-- Seleção de Roteiro -->
                     <div>
-                        <label for="roteiro-select" class="block text-sm font-medium text-gray-700">Selecione o Roteiro</label>
-                        <select id="roteiro-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
-                            <option value="">-- Escolha um dia --</option>
-                            <!-- Opções de roteiro serão inseridas aqui -->
+                        <label for="roteiro-select" class="block text-sm font-medium text-gray-700">Selecione o Roteiro</e-select>
+                        <select id="roteiro-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md">
+                            <option value="">-- Escolha o dia da semana --</option>
                         </select>
                     </div>
 
-                    <!-- Checklist de Ruas -->
-                    <div id="ruas-checklist-container" class="hidden">
-                        <h3 class="text-lg font-medium text-gray-900 mb-2">Ruas / Avenidas</h3>
-                        <div id="ruas-checklist" class="space-y-2 max-h-60 overflow-y-auto p-3 border rounded-md bg-gray-50">
-                            <!-- Checklist será inserido aqui -->
+                    <div id="roteiro-container" class="hidden">
+                        <div id="roteiro-locais" class="space-y-3 p-4 border rounded-md bg-gray-50">
+                            <!-- Locais do roteiro serão inseridos aqui -->
                         </div>
                          <div class="mt-4 text-right">
-                            <span class="text-lg font-bold text-gray-800">Total KM: <span id="total-km" class="text-indigo-600">0.00</span></span>
+                            <span class="text-xl font-bold text-gray-800">TOTAL: <span id="total-km" class="text-blue-600">0,00</span> km</span>
                         </div>
                     </div>
 
-                    <div class="text-right">
-                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Salvar Registro
+                    <div class="text-right pt-4">
+                        <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Salvar Roteiro
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- Tabela de Histórico -->
             <div>
-                <h2 class="text-2xl font-semibold mb-4">Histórico de Registros</h2>
+                <h2 class="text-2xl font-semibold mb-4">Histórico de Lançamentos</h2>
                 <div class="bg-white shadow-md rounded-lg overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
@@ -92,13 +95,13 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorista</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Roteiro</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ruas Concluídas</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Locais Concluídos</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Total</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
                             </tr>
                         </thead>
                         <tbody id="logs-table-body" class="bg-white divide-y divide-gray-200">
-                            <tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Carregando registros...</td></tr>
+                            <!-- Histórico será preenchido aqui -->
                         </tbody>
                     </table>
                 </div>
@@ -108,10 +111,9 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- Configuração do Firebase ---
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         
@@ -120,39 +122,21 @@
         const db = getFirestore(app);
         setLogLevel('debug');
 
-        // --- Dados dos Roteiros (Baseado na sua imagem) ---
         const roteiros = {
-            "sexta-feira": {
-                nome: "Roteiro de Sexta-feira",
-                ruas: [
-                    { nome: "Av. Paulino Muller", km: 3.07 },
-                    { nome: "Av. Elias Miguel", km: 0.82 },
-                    { nome: "Av. Getúlio Vargas", km: 2.57 },
-                    { nome: "Av. Governador Bley", km: 2.27 },
-                    { nome: "Av. Princesa Isabel", km: 2.30 },
-                    { nome: "Av. Jerônimo Monteiro", km: 2.34 },
-                    { nome: "Av. Florentino Avidos", km: 0.91 },
-                    { nome: "Av. Mal. Mascarenhas de Moraes", km: 14.70 }
-                ]
-            },
-            "quinta-feira": {
-                nome: "Roteiro de Quinta-feira",
-                ruas: [
-                    { nome: "Rua A", km: 1.5 },
-                    { nome: "Rua B", km: 2.1 },
-                    { nome: "Avenida C", km: 3.0 }
-                ]
-            },
-            // Adicione outros dias aqui
+            "segunda": { nome: "SEGUNDA-FEIRA", locais: ["Ciclovia Orla de Camburi", "Ciclovia Av Adalberto Simão Nader"] },
+            "terca": { nome: "TERÇA-FEIRA", locais: ["Santa Helena", "Enseada do Suá"] },
+            "quarta": { nome: "QUARTA-FEIRA", locais: ["Praia do Suá", "Tribunal de Justiça"] },
+            "quinta": { nome: "QUINTA-FEIRA", locais: ["Santa Lúcia", "Av Rio Branco", "Ponte Ayrton Sena"] },
+            "sexta": { nome: "SEXTA-FEIRA", locais: ["Ciclovia Curva da Jurema", "Ciclovia Orla de Camburi", "Jardim da Penha"] },
+            "sabado": { nome: "SÁBADO", locais: ["Praia do Canto (baixada)", "Praia do Suá"] }
         };
 
-        // --- Elementos do DOM ---
         const logForm = document.getElementById('log-form');
         const logsTableBody = document.getElementById('logs-table-body');
         const dataInput = document.getElementById('data');
         const roteiroSelect = document.getElementById('roteiro-select');
-        const ruasChecklistContainer = document.getElementById('ruas-checklist-container');
-        const ruasChecklist = document.getElementById('ruas-checklist');
+        const roteiroContainer = document.getElementById('roteiro-container');
+        const roteiroLocais = document.getElementById('roteiro-locais');
         const totalKmSpan = document.getElementById('total-km');
         const authMessage = document.getElementById('auth-message');
         const userIdSpan = document.getElementById('user-id');
@@ -163,63 +147,82 @@
         let logsCollectionRef = null;
         let unsubscribe = null;
 
-        // --- Funções ---
-
         function setTodayDate() {
-            const today = new Date();
-            dataInput.value = today.toISOString().split('T')[0];
+            dataInput.value = new Date().toISOString().split('T')[0];
         }
 
         function popularRoteiros() {
-            for (const key in roteiros) {
+            Object.keys(roteiros).forEach(key => {
                 const option = document.createElement('option');
                 option.value = key;
                 option.textContent = roteiros[key].nome;
                 roteiroSelect.appendChild(option);
-            }
+            });
         }
 
         function calcularTotalKm() {
             let total = 0;
-            const checkboxes = ruasChecklist.querySelectorAll('input[type="checkbox"]:checked');
-            checkboxes.forEach(cb => {
-                total += parseFloat(cb.dataset.km);
+            const kmInputs = roteiroLocais.querySelectorAll('input[type="number"]');
+            kmInputs.forEach(input => {
+                if (!input.disabled && input.value) {
+                    total += parseFloat(input.value);
+                }
             });
             totalKmSpan.textContent = total.toFixed(2).replace('.', ',');
         }
 
-        function exibirChecklistRoteiro() {
+        function exibirLocaisRoteiro() {
             const roteiroKey = roteiroSelect.value;
-            ruasChecklist.innerHTML = '';
+            roteiroLocais.innerHTML = '';
             totalKmSpan.textContent = '0,00';
 
             if (!roteiroKey) {
-                ruasChecklistContainer.classList.add('hidden');
+                roteiroContainer.classList.add('hidden');
                 return;
             }
 
             const roteiro = roteiros[roteiroKey];
-            roteiro.ruas.forEach((rua, index) => {
+            roteiro.locais.forEach((local, index) => {
                 const div = document.createElement('div');
-                div.className = 'flex items-center';
+                div.className = 'grid grid-cols-12 gap-2 items-center';
                 div.innerHTML = `
-                    <input id="rua-${index}" type="checkbox" data-km="${rua.km}" data-nome="${rua.nome}" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                    <label for="rua-${index}" class="ml-3 block text-sm text-gray-700 w-full flex justify-between">
-                        <span>${rua.nome}</span>
-                        <span class="font-medium text-gray-500">${String(rua.km.toFixed(2)).replace('.', ',')} km</span>
-                    </label>
+                    <div class="col-span-1 flex items-center justify-center">
+                        <input id="local-check-${index}" type="checkbox" data-index="${index}" class="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    </div>
+                    <label for="local-check-${index}" class="col-span-7 sm:col-span-8 block text-sm text-gray-800">${local}</label>
+                    <div class="col-span-4 sm:col-span-3">
+                        <input type="number" id="local-km-${index}" min="0" step="0.1" disabled placeholder="km" class="w-full px-2 py-1 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 text-right">
+                    </div>
                 `;
-                ruasChecklist.appendChild(div);
+                roteiroLocais.appendChild(div);
             });
 
-            ruasChecklistContainer.classList.remove('hidden');
-            ruasChecklist.addEventListener('change', calcularTotalKm);
+            roteiroContainer.classList.remove('hidden');
         }
+        
+        roteiroLocais.addEventListener('change', (event) => {
+            if (event.target.type === 'checkbox') {
+                const index = event.target.dataset.index;
+                const kmInput = document.getElementById(`local-km-${index}`);
+                kmInput.disabled = !event.target.checked;
+                if (!event.target.checked) {
+                    kmInput.value = '';
+                }
+                kmInput.focus();
+            }
+            calcularTotalKm();
+        });
+
+        roteiroLocais.addEventListener('input', (event) => {
+            if (event.target.type === 'number') {
+                calcularTotalKm();
+            }
+        });
 
         function renderLogs(logs) {
             logsTableBody.innerHTML = '';
             if (logs.length === 0) {
-                logsTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Nenhum registro encontrado.</td></tr>';
+                logsTableBody.innerHTML = '<tr><td colspan="6" class="px-6 py-4 text-center text-gray-500">Nenhum lançamento encontrado.</td></tr>';
                 return;
             }
 
@@ -227,16 +230,14 @@
 
             logs.forEach(log => {
                 const tr = document.createElement('tr');
-                const ruasConcluidasHtml = log.ruasConcluidas && log.ruasConcluidas.length > 0
-                    ? log.ruasConcluidas.join('<br>')
-                    : 'Nenhuma';
+                const locaisHtml = log.locaisConcluidos.map(l => `${l.nome}: <strong>${String(l.km.toFixed(2)).replace('.',',')} km</strong>`).join('<br>');
                 
                 tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${new Date(log.data + 'T00:00:00-03:00').toLocaleDateString('pt-BR')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${new Date(log.data + 'T03:00:00').toLocaleDateString('pt-BR')}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.motorista}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.roteiroNome}</td>
-                    <td class="px-6 py-4 text-sm text-gray-500">${ruasConcluidasHtml}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${String(log.kmTotal.toFixed(2)).replace('.', ',')}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">${locaisHtml}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800 font-bold">${String(log.kmTotal.toFixed(2)).replace('.', ',')}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button data-id="${log.id}" class="text-red-600 hover:text-red-900 delete-btn">Excluir</button>
                     </td>
@@ -251,9 +252,7 @@
             unsubscribe = onSnapshot(q, (snapshot) => {
                 const logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderLogs(logs);
-            }, (error) => {
-                console.error("Erro ao buscar registros: ", error);
-            });
+            }, console.error);
         }
 
         async function saveLog(event) {
@@ -264,17 +263,30 @@
                 return;
             }
 
-            const ruasConcluidas = [];
-            const checkboxes = ruasChecklist.querySelectorAll('input[type="checkbox"]:checked');
+            const locaisConcluidos = [];
+            const checkboxes = roteiroLocais.querySelectorAll('input[type="checkbox"]:checked');
             checkboxes.forEach(cb => {
-                ruasConcluidas.push(cb.dataset.nome);
+                const index = cb.dataset.index;
+                const kmInput = document.getElementById(`local-km-${index}`);
+                const kmValue = parseFloat(kmInput.value);
+                if (kmValue > 0) {
+                    locaisConcluidos.push({
+                        nome: roteiros[roteiroKey].locais[index],
+                        km: kmValue
+                    });
+                }
             });
 
+            if (locaisConcluidos.length === 0) {
+                alert("Nenhum local com quilometragem foi preenchido. Adicione os KMs antes de salvar.");
+                return;
+            }
+
             const logData = {
-                data: document.getElementById('data').value,
+                data: dataInput.value,
                 motorista: document.getElementById('motorista').value,
                 roteiroNome: roteiros[roteiroKey].nome,
-                ruasConcluidas: ruasConcluidas,
+                locaisConcluidos: locaisConcluidos,
                 kmTotal: parseFloat(totalKmSpan.textContent.replace(',', '.')),
                 createdAt: new Date()
             };
@@ -283,28 +295,26 @@
                 await addDoc(logsCollectionRef, logData);
                 logForm.reset();
                 setTodayDate();
-                exibirChecklistRoteiro();
+                exibirLocaisRoteiro();
             } catch (error) {
-                console.error("Erro ao salvar o registro: ", error);
+                console.error("Erro ao salvar o roteiro: ", error);
                 alert("Ocorreu um erro ao salvar.");
             }
         }
 
         async function deleteLog(id) {
-            if (!confirm("Tem certeza que deseja excluir este registro?")) return;
+            if (!confirm("Tem certeza que deseja excluir este lançamento?")) return;
             try {
-                const docRef = doc(db, `/artifacts/${appId}/users/${userId}/machine_logs_roteiros`, id);
+                const docRef = doc(db, `/artifacts/${appId}/users/${userId}/roteiros_varricao`, id);
                 await deleteDoc(docRef);
             } catch (error) {
-                console.error("Erro ao excluir o registro: ", error);
+                console.error("Erro ao excluir o roteiro: ", error);
                 alert("Ocorreu um erro ao excluir.");
             }
         }
-
-        // --- Inicialização e Event Listeners ---
         
-        roteiroSelect.addEventListener('change', exibirChecklistRoteiro);
         logForm.addEventListener('submit', saveLog);
+        roteiroSelect.addEventListener('change', exibirLocaisRoteiro);
         logsTableBody.addEventListener('click', (event) => {
             if (event.target.classList.contains('delete-btn')) {
                 deleteLog(event.target.dataset.id);
@@ -317,24 +327,18 @@
                 userIdSpan.textContent = userId;
                 authMessage.textContent = 'Conectado com sucesso!';
                 loader.classList.add('hidden');
-                logsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/machine_logs_roteiros`);
+                logsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/roteiros_varricao`);
                 appContent.classList.remove('hidden');
                 getLogs();
             } else {
                 authMessage.textContent = 'Usuário não autenticado.';
-                loader.classList.add('hidden');
-                appContent.classList.add('hidden');
             }
         });
 
         async function initializeAuth() {
             try {
                 loader.classList.remove('hidden');
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                await signInAnonymously(auth);
             } catch (error) {
                 console.error("Erro na autenticação: ", error);
                 authMessage.textContent = 'Falha na autenticação.';
