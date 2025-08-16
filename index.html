@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro Diário de Máquina</title>
+    <title>Registro Diário Colaborativo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Estilo para o spinner de carregamento */
         .loader {
             border: 4px solid #f3f3f3;
             border-radius: 50%;
@@ -27,89 +26,88 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
-        <header class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">Registro Diário de Operação da Máquina</h1>
-            <p class="text-gray-600 mt-2">Anote aqui as informações diárias de cada máquina.</p>
-        </header>
-
-        <!-- Seção de Autenticação e Carregamento -->
-        <div id="auth-status" class="text-center p-4 mb-6 bg-white rounded-lg shadow-md">
-            <p id="auth-message">Conectando ao banco de dados...</p>
-            <div id="loader" class="loader mx-auto my-2 hidden"></div>
-            <p class="text-xs text-gray-500 mt-2">ID de Usuário: <span id="user-id" class="font-mono">N/A</span></p>
+    <div id="app-container" class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-4xl">
+        <!-- Tela de Login/Cadastro (Inicial) -->
+        <div id="auth-screen">
+            <div class="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto">
+                <h1 class="text-2xl font-bold text-center mb-6">Bem-vindo!</h1>
+                <div id="auth-forms">
+                    <!-- Formulário de Login -->
+                    <form id="login-form" class="space-y-4">
+                        <h2 class="text-xl font-semibold">Entrar</h2>
+                        <div>
+                            <label for="login-email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="login-password" class="block text-sm font-medium text-gray-700">Senha</label>
+                            <input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">Entrar</button>
+                        <p class="text-center text-sm">Não tem uma conta? <a href="#" id="show-register" class="text-indigo-600 hover:underline">Cadastre-se</a></p>
+                    </form>
+                    <!-- Formulário de Cadastro -->
+                    <form id="register-form" class="space-y-4 hidden">
+                        <h2 class="text-xl font-semibold">Cadastrar</h2>
+                        <div>
+                            <label for="register-email" class="block text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="register-email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="register-password" class="block text-sm font-medium text-gray-700">Senha</label>
+                            <input type="password" id="register-password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md">Cadastrar</button>
+                        <p class="text-center text-sm">Já tem uma conta? <a href="#" id="show-login" class="text-indigo-600 hover:underline">Entrar</a></p>
+                    </form>
+                </div>
+                <p id="auth-error" class="text-red-500 text-center mt-4"></p>
+            </div>
         </div>
 
-        <!-- Formulário de Registro -->
-        <div id="app-content" class="hidden">
-            <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                <h2 class="text-2xl font-semibold mb-4">Novo Registro</h2>
-                <form id="log-form" class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="data" class="block text-sm font-medium text-gray-700">Data</label>
-                            <input type="date" id="data" name="data" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-                        <div>
-                            <label for="motorista" class="block text-sm font-medium text-gray-700">Nome do Motorista</label>
-                            <input type="text" id="motorista" name="motorista" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: João da Silva">
-                        </div>
+        <!-- Tela de Seleção de Sala (Após Login) -->
+        <div id="room-selection-screen" class="hidden">
+             <header class="flex justify-between items-center mb-6">
+                <div>
+                    <p class="text-sm">Logado como: <span id="user-email-display" class="font-semibold"></span></p>
+                </div>
+                <button id="logout-button" class="py-2 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-md text-sm">Sair</button>
+            </header>
+            <div class="bg-white p-8 rounded-lg shadow-md max-w-md mx-auto text-center">
+                <h1 class="text-2xl font-bold mb-6">Selecione ou Crie uma Sala</h1>
+                <div class="space-y-4">
+                    <button id="create-room-button" class="w-full py-2 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-md">Criar Nova Sala</button>
+                    <div class="relative flex items-center justify-center my-4">
+                        <div class="flex-grow border-t border-gray-300"></div>
+                        <span class="flex-shrink mx-4 text-gray-500">OU</span>
+                        <div class="flex-grow border-t border-gray-300"></div>
                     </div>
-                    
-                    <div class="flex items-center">
-                        <input id="rodou" name="rodou" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded">
-                        <label for="rodou" class="ml-2 block text-sm font-medium text-gray-900">A máquina rodou hoje?</label>
-                    </div>
-
-                    <div id="detalhes-operacao" class="space-y-4 hidden">
-                         <div>
-                            <label for="rota" class="block text-sm font-medium text-gray-700">Rota Realizada</label>
-                            <input type="text" id="rota" name="rota" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: Centro -> Bairro Sul">
-                        </div>
-                        <div>
-                            <label for="rua" class="block text-sm font-medium text-gray-700">Rua(s) Limpa(s)</label>
-                            <textarea id="rua" name="rua" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: Av. Principal, Rua das Flores"></textarea>
-                        </div>
-                        <div>
-                            <label for="km" class="block text-sm font-medium text-gray-700">Quilometragem (km)</label>
-                            <input type="number" id="km" name="km" min="0" step="0.1" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: 50.5">
-                        </div>
-                    </div>
-
-                    <div class="text-right">
-                        <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Salvar Registro
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Tabela de Histórico -->
-            <div>
-                <h2 class="text-2xl font-semibold mb-4">Histórico de Registros</h2>
-                <div class="bg-white shadow-md rounded-lg overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rodou?</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorista</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rua(s)</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM</th>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="logs-table-body" class="bg-white divide-y divide-gray-200">
-                             <tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Carregando registros...</td></tr>
-                        </tbody>
-                    </table>
+                    <form id="join-room-form">
+                        <input type="text" id="room-id-input" placeholder="Digite o ID da Sala" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 mb-2">
+                        <button type="submit" class="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-medium rounded-md">Entrar na Sala</button>
+                    </form>
                 </div>
             </div>
         </div>
+        
+        <!-- Tela Principal da Aplicação (Dentro de uma Sala) -->
+        <div id="main-app-screen" class="hidden">
+            <header class="flex justify-between items-center mb-6 bg-white p-4 rounded-lg shadow-md">
+                 <div>
+                    <h1 class="text-2xl font-bold">Registro de Máquinas</h1>
+                    <p class="text-sm text-gray-600">Sala: <span id="room-id-display" class="font-mono font-semibold cursor-pointer" title="Clique para copiar"></span></p>
+                </div>
+                <button id="leave-room-button" class="py-2 px-4 bg-gray-600 hover:bg-gray-700 text-white font-medium rounded-md">Sair da Sala</button>
+            </header>
+            
+            <!-- Conteúdo principal (formulário e tabela) -->
+            <div id="app-content">
+                <!-- O conteúdo do formulário e da tabela irá aqui, igual ao original -->
+            </div>
+        </div>
     </div>
-
-    <!-- Modal de Confirmação/Alerta -->
+    
+    <!-- Modal de Alerta -->
     <div id="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
@@ -117,215 +115,309 @@
                 <div class="mt-2 px-7 py-3">
                     <p class="text-sm text-gray-500" id="modal-message"></p>
                 </div>
-                <div class="items-center px-4 py-3 space-x-2" id="modal-buttons">
-                    <!-- Botões serão injetados aqui -->
+                <div class="items-center px-4 py-3">
+                    <button id="modal-ok-button" class="px-4 py-2 bg-indigo-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">OK</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script type="module">
-        // Importações do Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, deleteDoc, setLogLevel, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- Configuração do Firebase ---
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "YOUR_API_KEY", authDomain: "YOUR_AUTH_DOMAIN", projectId: "YOUR_PROJECT_ID" };
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = {
+            apiKey: "AIzaSyB08rIw5Ylcxc693GHCM2sO8I8vPz8otNg",
+            authDomain: "appmaquinas-b1536.firebaseapp.com",
+            projectId: "appmaquinas-b1536",
+            storageBucket: "appmaquinas-b1536.appspot.com",
+            messagingSenderId: "975490158223",
+            appId: "1:975490158223:web:5ed507d8aa883cd89faafa",
+            measurementId: "G-N0SPR65DY3"
+        };
         
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         setLogLevel('debug');
 
-        // --- Elementos do DOM ---
-        const logForm = document.getElementById('log-form');
-        const logsTableBody = document.getElementById('logs-table-body');
-        const rodouCheckbox = document.getElementById('rodou');
-        const detalhesOperacaoDiv = document.getElementById('detalhes-operacao');
-        const dataInput = document.getElementById('data');
-        const authMessage = document.getElementById('auth-message');
-        const userIdSpan = document.getElementById('user-id');
-        const loader = document.getElementById('loader');
-        const appContent = document.getElementById('app-content');
+        // --- Gerenciamento de Estado e Elementos do DOM ---
+        let currentRoomId = null;
+        let unsubscribeLogs = null;
+
+        const screens = {
+            auth: document.getElementById('auth-screen'),
+            roomSelection: document.getElementById('room-selection-screen'),
+            mainApp: document.getElementById('main-app-screen')
+        };
+
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const authError = document.getElementById('auth-error');
+        const userEmailDisplay = document.getElementById('user-email-display');
+        const logoutButton = document.getElementById('logout-button');
+        const createRoomButton = document.getElementById('create-room-button');
+        const joinRoomForm = document.getElementById('join-room-form');
+        const roomIdInput = document.getElementById('room-id-input');
+        const roomIdDisplay = document.getElementById('room-id-display');
+        const leaveRoomButton = document.getElementById('leave-room-button');
+        const appContentDiv = document.getElementById('app-content');
+        
         const modal = document.getElementById('modal');
         const modalTitle = document.getElementById('modal-title');
         const modalMessage = document.getElementById('modal-message');
-        const modalButtons = document.getElementById('modal-buttons');
+        const modalOkButton = document.getElementById('modal-ok-button');
 
-        let userId = null;
-        let logsCollectionRef = null;
-        let unsubscribe = null;
+        // --- Funções de Navegação e UI ---
+        function showScreen(screenName) {
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            if (screens[screenName]) {
+                screens[screenName].classList.remove('hidden');
+            }
+        }
 
-        // --- Funções do Modal ---
-        function showModal(title, message, buttons = [{ text: "OK", action: hideModal, class: "bg-indigo-600 hover:bg-indigo-700 text-white" }]) {
+        function showAlert(title, message) {
             modalTitle.textContent = title;
             modalMessage.textContent = message;
-            modalButtons.innerHTML = '';
-            buttons.forEach(btnInfo => {
-                const button = document.createElement('button');
-                button.textContent = btnInfo.text;
-                button.className = `px-4 py-2 rounded-md text-sm font-medium focus:outline-none ${btnInfo.class || 'bg-gray-300 hover:bg-gray-400'}`;
-                button.onclick = btnInfo.action;
-                modalButtons.appendChild(button);
-            });
             modal.classList.remove('hidden');
         }
+        modalOkButton.addEventListener('click', () => modal.classList.add('hidden'));
 
-        function hideModal() {
-            modal.classList.add('hidden');
-        }
+        document.getElementById('show-register').addEventListener('click', (e) => {
+            e.preventDefault();
+            loginForm.classList.add('hidden');
+            registerForm.classList.remove('hidden');
+            authError.textContent = '';
+        });
 
-        // --- Funções Principais ---
-        function setTodayDate() {
-            const today = new Date();
-            const year = today.getFullYear();
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            const day = String(today.getDate()).padStart(2, '0');
-            dataInput.value = `${year}-${month}-${day}`;
-        }
-
-        function toggleDetalhes() {
-            if (rodouCheckbox.checked) {
-                detalhesOperacaoDiv.classList.remove('hidden');
+        document.getElementById('show-login').addEventListener('click', (e) => {
+            e.preventDefault();
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            authError.textContent = '';
+        });
+        
+        // --- Funções de Autenticação ---
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                userEmailDisplay.textContent = user.email;
+                showScreen('roomSelection');
             } else {
-                detalhesOperacaoDiv.classList.add('hidden');
+                showScreen('auth');
+                if(currentRoomId) leaveRoom();
+            }
+        });
+
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                authError.textContent = '';
+            } catch (error) {
+                authError.textContent = "Erro ao cadastrar: " + error.message;
+            }
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                authError.textContent = '';
+            } catch (error) {
+                authError.textContent = "Erro ao entrar: " + error.message;
+            }
+        });
+
+        logoutButton.addEventListener('click', () => signOut(auth));
+
+        // --- Funções de Sala (Room) ---
+        function generateRoomId() {
+            return Math.random().toString(36).substring(2, 8).toUpperCase();
+        }
+        
+        createRoomButton.addEventListener('click', () => {
+            const newRoomId = generateRoomId();
+            joinRoom(newRoomId);
+        });
+        
+        joinRoomForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const roomId = roomIdInput.value.trim().toUpperCase();
+            if(roomId) joinRoom(roomId);
+        });
+
+        function joinRoom(roomId) {
+            currentRoomId = roomId;
+            roomIdDisplay.textContent = currentRoomId;
+            showScreen('mainApp');
+            loadMainAppUI();
+            listenToLogs();
+        }
+        
+        function leaveRoom() {
+            if (unsubscribeLogs) unsubscribeLogs();
+            currentRoomId = null;
+            appContentDiv.innerHTML = '';
+            showScreen('roomSelection');
+        }
+        
+        leaveRoomButton.addEventListener('click', leaveRoom);
+        
+        roomIdDisplay.addEventListener('click', () => {
+            navigator.clipboard.writeText(currentRoomId).then(() => {
+                showAlert("Copiado!", `O ID da sala "${currentRoomId}" foi copiado para a área de transferência.`);
+            }, () => {
+                showAlert("Erro", "Não foi possível copiar o ID.");
+            });
+        });
+
+        // --- Lógica Principal do App (Formulário e Tabela) ---
+        function loadMainAppUI() {
+            appContentDiv.innerHTML = `
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-semibold mb-4">Novo Registro</h2>
+                    <form id="log-form" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div><label for="data" class="block text-sm font-medium text-gray-700">Data</label><input type="date" id="data" name="data" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"></div>
+                            <div><label for="motorista" class="block text-sm font-medium text-gray-700">Nome do Motorista</label><input type="text" id="motorista" name="motorista" required class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: João da Silva"></div>
+                        </div>
+                        <div class="flex items-center"><input id="rodou" name="rodou" type="checkbox" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"><label for="rodou" class="ml-2 block text-sm font-medium text-gray-900">A máquina rodou hoje?</label></div>
+                        <div id="detalhes-operacao" class="space-y-4 hidden">
+                            <div><label for="rota" class="block text-sm font-medium text-gray-700">Rota Realizada</label><input type="text" id="rota" name="rota" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: Centro -> Bairro Sul"></div>
+                            <div><label for="rua" class="block text-sm font-medium text-gray-700">Rua(s) Limpa(s)</label><textarea id="rua" name="rua" rows="3" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: Av. Principal, Rua das Flores"></textarea></div>
+                            <div><label for="km" class="block text-sm font-medium text-gray-700">Quilometragem (km)</label><input type="number" id="km" name="km" min="0" step="0.1" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ex: 50.5"></div>
+                        </div>
+                        <div class="text-right"><button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">Salvar Registro</button></div>
+                    </form>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-semibold mb-4">Histórico de Registros</h2>
+                    <div class="bg-white shadow-md rounded-lg overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50"><tr><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rodou?</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Motorista</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rota</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rua(s)</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM</th><th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th></tr></thead>
+                            <tbody id="logs-table-body" class="bg-white divide-y divide-gray-200"><tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Carregando registros...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            // Adiciona os event listeners aos novos elementos
+            const newLogForm = document.getElementById('log-form');
+            const newRodouCheckbox = document.getElementById('rodou');
+            newLogForm.addEventListener('submit', saveLog);
+            newRodouCheckbox.addEventListener('change', toggleDetalhes);
+            document.getElementById('logs-table-body').addEventListener('click', handleDeleteClick);
+            
+            setTodayDate();
+            toggleDetalhes();
+        }
+        
+        function toggleDetalhes() {
+            const detalhes = document.getElementById('detalhes-operacao');
+            const rodou = document.getElementById('rodou');
+            if (detalhes && rodou) {
+                 detalhes.classList.toggle('hidden', !rodou.checked);
+            }
+        }
+        
+        function setTodayDate() {
+            const dataInput = document.getElementById('data');
+            if(dataInput) {
+                const today = new Date();
+                dataInput.value = today.toISOString().split('T')[0];
             }
         }
 
+        async function saveLog(event) {
+            event.preventDefault();
+            const user = auth.currentUser;
+            if (!user || !currentRoomId) return;
+            
+            const form = event.target;
+            const logData = {
+                data: form.data.value,
+                motorista: form.motorista.value,
+                rodou: form.rodou.checked,
+                rota: form.rota.value || '',
+                rua: form.rua.value || '',
+                km: form.km.value || '',
+                authorEmail: user.email,
+                createdAt: serverTimestamp()
+            };
+            try {
+                const logsCollectionRef = collection(db, `rooms/${currentRoomId}/logs`);
+                await addDoc(logsCollectionRef, logData);
+                form.reset();
+                setTodayDate();
+                toggleDetalhes();
+            } catch (error) {
+                console.error("Erro ao salvar: ", error);
+                showAlert("Erro", "Não foi possível salvar o registro.");
+            }
+        }
+
+        function listenToLogs() {
+            if (unsubscribeLogs) unsubscribeLogs();
+            const logsCollectionRef = collection(db, `rooms/${currentRoomId}/logs`);
+            const q = query(logsCollectionRef);
+            
+            unsubscribeLogs = onSnapshot(q, (querySnapshot) => {
+                const logs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderLogs(logs);
+            }, (error) => {
+                console.error("Erro ao ouvir registros: ", error);
+                showAlert("Erro", "Não foi possível carregar os registros da sala.");
+            });
+        }
+        
         function renderLogs(logs) {
-            logsTableBody.innerHTML = '';
+            const tableBody = document.getElementById('logs-table-body');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
             if (logs.length === 0) {
-                logsTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Nenhum registro encontrado.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-gray-500">Nenhum registro nesta sala.</td></tr>';
                 return;
             }
-            logs.sort((a, b) => new Date(b.data) - new Date(a.data));
+
+            logs.sort((a, b) => (b.data > a.data) ? 1 : -1);
+
             logs.forEach(log => {
                 const tr = document.createElement('tr');
+                const date = new Date(log.data + 'T00:00:00-03:00');
                 tr.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${new Date(log.data + 'T00:00:00-03:00').toLocaleDateString('pt-BR')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${date.toLocaleDateString('pt-BR')}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">${log.rodou ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Sim</span>' : '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Não</span>'}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.motorista}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.rota || 'N/A'}</td>
                     <td class="px-6 py-4 text-sm text-gray-500 break-words max-w-xs">${log.rua || 'N/A'}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${log.km || 'N/A'}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button data-id="${log.id}" class="text-red-600 hover:text-red-900 delete-btn">Excluir</button>
-                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium"><button data-id="${log.id}" class="text-red-600 hover:text-red-900 delete-btn">Excluir</button></td>
                 `;
-                logsTableBody.appendChild(tr);
+                tableBody.appendChild(tr);
             });
-        }
-
-        function getLogs() {
-            if (unsubscribe) unsubscribe();
-            const q = query(logsCollectionRef);
-            unsubscribe = onSnapshot(q, (querySnapshot) => {
-                const logs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderLogs(logs);
-            }, (error) => {
-                console.error("Erro ao buscar registros: ", error);
-                logsTableBody.innerHTML = '<tr><td colspan="7" class="px-6 py-4 text-center text-red-500">Erro ao carregar dados.</td></tr>';
-            });
-        }
-
-        async function saveLog(event) {
-            event.preventDefault();
-            const formData = new FormData(logForm);
-            const logData = {
-                data: formData.get('data'),
-                motorista: formData.get('motorista'),
-                rodou: formData.get('rodou') === 'on',
-                rota: formData.get('rota') || '',
-                rua: formData.get('rua') || '',
-                km: formData.get('km') || '',
-                createdAt: new Date()
-            };
-
-            try {
-                await addDoc(logsCollectionRef, logData);
-                logForm.reset();
-                setTodayDate();
-                toggleDetalhes();
-            } catch (error) {
-                console.error("Erro ao salvar o registro: ", error);
-                showModal("Erro", "Ocorreu um erro ao salvar. Tente novamente.");
-            }
         }
         
-        async function executeDelete(id) {
-             try {
-                const docRef = doc(db, `/artifacts/${appId}/users/${userId}/machine_logs`, id);
-                await deleteDoc(docRef);
-            } catch (error) {
-                console.error("Erro ao excluir o registro: ", error);
-                showModal("Erro", "Ocorreu um erro ao excluir. Tente novamente.");
-            }
-        }
-
-        function deleteLog(id) {
-            showModal(
-                "Confirmar Exclusão",
-                "Tem certeza que deseja excluir este registro?",
-                [
-                    { text: "Cancelar", class: "bg-gray-200 hover:bg-gray-300", action: hideModal },
-                    { text: "Excluir", class: "bg-red-600 hover:bg-red-700 text-white", action: () => {
-                        executeDelete(id);
-                        hideModal();
-                    }}
-                ]
-            );
-        }
-
-        // --- Inicialização e Event Listeners ---
-        rodouCheckbox.addEventListener('change', toggleDetalhes);
-        logForm.addEventListener('submit', saveLog);
-        logsTableBody.addEventListener('click', (event) => {
+        async function handleDeleteClick(event) {
             if (event.target.classList.contains('delete-btn')) {
-                const id = event.target.getAttribute('data-id');
-                deleteLog(id);
-            }
-        });
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                userId = user.uid;
-                userIdSpan.textContent = userId;
-                authMessage.textContent = 'Conectado com sucesso!';
-                loader.classList.add('hidden');
-                logsCollectionRef = collection(db, `/artifacts/${appId}/users/${userId}/machine_logs`);
-                appContent.classList.remove('hidden');
-                getLogs();
-            } else {
-                authMessage.textContent = 'Usuário não autenticado. Tentando login anônimo...';
-                userIdSpan.textContent = 'N/A';
-                loader.classList.remove('hidden');
-                appContent.classList.add('hidden');
-            }
-        });
-
-        async function initializeAuth() {
-            try {
-                loader.classList.remove('hidden');
-                const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (token) {
-                    await signInWithCustomToken(auth, token);
-                } else {
-                    await signInAnonymously(auth);
+                const id = event.target.dataset.id;
+                if (confirm("Tem certeza que deseja excluir este registro?")) {
+                    try {
+                        const docRef = doc(db, `rooms/${currentRoomId}/logs`, id);
+                        await deleteDoc(docRef);
+                    } catch (error) {
+                        console.error("Erro ao deletar:", error);
+                        showAlert("Erro", "Não foi possível excluir o registro.");
+                    }
                 }
-            } catch (error) {
-                console.error("Erro na autenticação: ", error);
-                authMessage.textContent = 'Falha na autenticação. Verifique sua conexão e atualize a página.';
-                loader.classList.add('hidden');
             }
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            setTodayDate();
-            toggleDetalhes();
-            initializeAuth();
-        });
     </script>
 </body>
 </html>
